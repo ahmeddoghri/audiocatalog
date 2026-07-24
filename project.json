@@ -1,0 +1,14 @@
+{
+  "tagline": "Local acoustic-fingerprint index for duplicate audio",
+  "headline": "Names drift. The recording does not.",
+  "summary": "Index audio with Chromaprint, search near-identical recordings, and audit duplicate libraries locally.",
+  "accent": "#78e6d0",
+  "topics": "chromaprint,audio-fingerprinting,music-library,duplicate-detection,sqlite",
+  "sources": [
+    [
+      "Chromaprint",
+      "https://acoustid.org/chromaprint"
+    ]
+  ],
+  "name": "audiocatalog"
+}
