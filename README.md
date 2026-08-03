@@ -38,7 +38,19 @@ Open <http://127.0.0.1:8090>. Analyze your own JSON input with `audiocatalog ana
 
 ## The result
 
-Four tracks produce six candidate pairs. One pair — a renamed, re-encoded copy of the same master — matches at 98.65% similarity, while every unrelated pair stays under the 92% threshold with real separation, not a near-miss. The integration test doesn't stop at fixture data: it fingerprints real WAV audio with `fpcalc` and persists the result in SQLite.
+Four tracks produce six candidate pairs. One pair — a renamed, re-encoded copy of the same master — matches at 99.48% similarity, while every unrelated pair stays under 75%, comfortably below the 92% threshold. The integration test doesn't stop at fixture data: it fingerprints real WAV audio with `fpcalc` and persists the result in SQLite.
+
+**Update:** the previous published numbers (98.65% duplicate, unrelated
+pairs under 46%) came from a similarity function that normalized each
+fingerprint word by how many bits its own numeric value needed, not by
+Chromaprint's actual fixed 32-bit word width. That made the score depend
+on the fingerprint's numeric magnitude rather than genuine bit-level
+agreement — and the demo's illustrative fingerprint values (all under
+65536) are far smaller than what real `fpcalc` produces (~30-bit
+magnitude), so the bug's distorting effect was largest exactly where the
+published claim lived. Fixed to use a fixed 32-bit-per-word Hamming
+similarity, the standard way to compare Chromaprint fingerprints. Details
+below.
 
 ## Scope
 
@@ -49,6 +61,40 @@ Chromaprint is built for near-identical full recordings and long-stream monitori
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## The similarity metric wasn't fixed-width Hamming distance
+
+`similarity()` normalized each fingerprint word's XOR bit-difference by
+`max(1, left.bit_length(), right.bit_length())` — the minimum number of
+bits needed to represent whichever value was larger at that position,
+recomputed per pair, per position. Chromaprint fingerprints are arrays of
+fixed 32-bit unsigned words; the correct normalization is a constant 32,
+not a value that shifts depending on the specific numbers being compared.
+
+Checked directly against real `fpcalc` output: raw fingerprint words come
+back in the hundreds-of-millions range (30-bit magnitude), while the
+demo's illustrative fixture uses values all under 65536 (8-16 bits). That
+mismatch is exactly why the bug's effect on the published numbers was so
+large — with a variable, value-dependent denominator instead of a fixed
+32, the demo's unrelated track pairs scored 38-46% instead of their true
+~70-74%, manufacturing a "real separation, not a near-miss" margin from
+the 92% threshold that the actual fingerprint data doesn't support.
+
+```python
+similarity([3, 5, 9], [12, 20, 36])          # small values
+similarity([3<<20, 5<<20, 9<<20], [12<<20, 20<<20, 36<<20])  # same bit pattern, shifted up
+```
+
+Both calls now return the identical score, because bit-level agreement —
+not the numeric magnitude of the words being compared — is the only
+thing that should matter. Stress-tested against 30 trials of realistic
+(uniformly random 32-bit word) fingerprints with small bit-flip
+perturbations simulating re-encoding noise: the corrected metric always
+ranks a near-duplicate above an unrelated fingerprint, matching the
+theoretically correct 32-bit Hamming similarity exactly. The demo still
+finds exactly one duplicate pair (99.48% similarity) with every unrelated
+pair safely under the threshold — the tool's core claim holds, just with
+honest numbers instead of an artifact of unrealistic illustrative values.
 
 ## Research basis
 

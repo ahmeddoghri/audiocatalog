@@ -18,13 +18,22 @@ DEMO = {
 }
 
 
+FINGERPRINT_WORD_BITS = 32  # Chromaprint raw fingerprint words are 32-bit unsigned integers
+
+
 def similarity(left: list[int], right: list[int]) -> float:
+    """Fraction of matching bits across the shared fingerprint words,
+    normalized to Chromaprint's actual 32-bit word width. Normalizing by
+    each value's bit_length() instead (the minimum bits needed to
+    represent that specific number) makes the denominator depend on the
+    numeric magnitude of the fingerprint words rather than their fixed
+    width -- a genuinely different, non-standard, and misleading metric,
+    not just a rounding difference."""
     length = min(len(left), len(right))
     if not length:
         return 0.0
     different = sum((int(left[index]) ^ int(right[index])).bit_count() for index in range(length))
-    bits = sum(max(1, int(left[index]).bit_length(), int(right[index]).bit_length()) for index in range(length))
-    return 1 - different / bits
+    return 1 - different / (FINGERPRINT_WORD_BITS * length)
 
 
 def fingerprint(path: str) -> dict[str, Any]:
