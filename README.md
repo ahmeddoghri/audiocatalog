@@ -17,7 +17,7 @@ Run every file through `fpcalc` to get a real Chromaprint acoustic fingerprint, 
 - Real Chromaprint fingerprinting via `fpcalc`, not a filename or metadata heuristic
 - Pairwise similarity search across a library with a calibrated duplicate threshold
 - SQLite-backed index so re-scanning a library doesn't mean re-fingerprinting everything
-- CLI, JSON API, browser workbench, Docker, tests, and CI
+- CLI, JSON API, browser workbench, Docker, tests
 
 ## Run it end to end
 
