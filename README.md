@@ -1,5 +1,7 @@
 # audiocatalog
 
+[![tests](https://github.com/ahmeddoghri/audiocatalog/actions/workflows/tests.yml/badge.svg)](https://github.com/ahmeddoghri/audiocatalog/actions/workflows/tests.yml) [![case study](https://img.shields.io/badge/case%20study-adoghri.com-e0703e)](https://adoghri.com/project-54.html)
+
 **Rename a file, re-encode it, and it's still the same recording — your filesystem just can't tell anymore.**
 
 ![audiocatalog cover](demo/cover.png)
