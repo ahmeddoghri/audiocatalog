@@ -98,6 +98,26 @@ finds exactly one duplicate pair (99.48% similarity) with every unrelated
 pair safely under the threshold — the tool's core claim holds, just with
 honest numbers instead of an artifact of unrealistic illustrative values.
 
+## On real audio, through fpcalc
+
+The demo fixture is illustrative data. `tests/test_real_audio.py` renders
+actual files with ffmpeg, transcodes one, and fingerprints all three with
+the real `fpcalc` binary:
+
+| pair | similarity | verdict at threshold 0.92 |
+| --- | ---: | --- |
+| `song.wav` vs its 128 kbps MP3 export | **1.0000** | duplicate |
+| `song.wav` vs a different recording | 0.7748 | not a duplicate |
+
+Two things worth noting. A lossy re-encode of the same recording survives
+fingerprinting intact, which is the entire point of acoustic fingerprinting
+over file hashing. And unrelated tracks sit around 0.77, not near zero,
+which is what the corrected fixed-width metric predicts: the threshold is
+doing real work, and a low-looking absolute number is not available here.
+The test also asserts that real fingerprint words span the full 32-bit range,
+since the old value-dependent normalization was distorted precisely because
+real words are about 30 bits while the demo fixture uses 8 to 16.
+
 ## Research basis
 
 - [Chromaprint](https://acoustid.org/chromaprint)
